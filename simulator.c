@@ -1,7 +1,7 @@
 /* SUBMIT ONLY THIS FILE */
-/* NAME: ....... */
-/* UCI ID: .......*/
-
+/* NAME: Eric Huang */ /* UCI ID: 59504944 */
+/* NAME: Midhuna Mohanraj */ /* UCI ID: 39922268 */
+/* NAME: Destin Wong */ /* UCI ID: 64848542 */
 // only include standard libraries.
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,6 +31,9 @@ void simulate(double *avg_access_time,
     // track which index was denied first last cycle
     int priority_index = 0;
 
+    // average access time for each processor
+    double proc_avg_access_time_past = 0.0;
+    
     // check if dist is normal
     if(dist == 'n') {
         random = false;
@@ -108,7 +111,30 @@ void simulate(double *avg_access_time,
                     }
                 }
             }
-        }
+            // calculate the average access time for all processors
+            // insert it into the right spot into avg_access_time array
+            double access_time_total = 0.0;
+            int processors_granted_access = 0;
+            for (int i = 0; i < procs; i++){
+                if(access_counter[i]!=0){
+                    // single processor's average
+                    access_time_total += ((float) cycle) / access_counter[i];
+                    processors_granted_access += 1;
+                }
+                double avg_access_time_for_this_cycle = access_time_total / (float) processors_granted_access;
+
+            if (cycle > 0){
+                // if diff between prev and first access time is greater than threshold 0.02, error
+                double diff = fabs(1.0 - (proc_avg_access_time_past / avg_access_time_for_this_cycle));
+                // printf("%f\n", diff);
+                if(diff < 0.02 && procs == processors_granted_access){
+                    break;
+                }
+            }
+            proc_avg_access_time_past = avg_access_time_for_this_cycle;
+            }
+            
+    }
   
         // calculate the average access time for all processors
         // insert it into the right spot into avg_access_time array
@@ -118,6 +144,7 @@ void simulate(double *avg_access_time,
             access_time_total += ((float) max_cycles) / access_counter[i];
             }else{
                 printf("were starving");
+                return;
             }
         }
         double avg_access_time_for_this_mem = ((float) access_time_total) / procs;
@@ -126,15 +153,18 @@ void simulate(double *avg_access_time,
         free(memory);
         free(affinity);
 
-
-
-
     
     
     }
     free(proc_request);
     free(access_counter);
     
+    // print to file
+    FILE *f = fopen("output_4_procs.txt", "w");
+    for (int i = 0; i < avg_access_time_len; i++) {
+        fprintf(f, "%f\n", avg_access_time[i]);
+    }
+    fclose(f);
             
 
             
